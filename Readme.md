@@ -25,7 +25,7 @@ A robust REST API for managing events and user registrations built with Node.js,
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/panjyar/Event-Management.git
 cd event-management-api
 ```
 
