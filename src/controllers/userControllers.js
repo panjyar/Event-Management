@@ -1,4 +1,4 @@
-const UserModel = require('../models/userModel').default;
+const UserModel = require('../models/userModel');
 
 class UserController {
   

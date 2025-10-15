@@ -1,9 +1,9 @@
-const EventModel = require('../models/eventModel').default;
-const UserModel = require('../models/userModel').default;
+const EventModel = require('../models/eventModel');
+const UserModel = require('../models/userModel');
 const { getUpcomingEventsSorted } = require('../utils/sortEvents');
 
 class EventController {
-
+  // Create new event
   static async createEvent(req, res, next) {
     try {
       const { title, date_time, location, capacity } = req.body;
@@ -28,18 +28,16 @@ class EventController {
     }
   }
 
+  // Get event details by ID
   static async getEventDetails(req, res, next) {
     try {
-      const eventId = parseInt(req.params.id);
+      const eventId = parseInt(req.params.id, 10);
 
       const event = await EventModel.findById(eventId);
-
       if (!event) {
         return res.status(404).json({
           success: false,
-          error: {
-            message: 'Event not found',
-          },
+          error: { message: 'Event not found' },
         });
       }
 
@@ -52,6 +50,7 @@ class EventController {
     }
   }
 
+  // Register a user for an event
   static async registerForEvent(req, res, next) {
     try {
       const { user_id, event_id } = req.body;
@@ -60,9 +59,7 @@ class EventController {
       if (!userExists) {
         return res.status(404).json({
           success: false,
-          error: {
-            message: 'User not found',
-          },
+          error: { message: 'User not found' },
         });
       }
 
@@ -70,9 +67,7 @@ class EventController {
       if (!event) {
         return res.status(404).json({
           success: false,
-          error: {
-            message: 'Event not found',
-          },
+          error: { message: 'Event not found' },
         });
       }
 
@@ -80,18 +75,15 @@ class EventController {
       if (isPast) {
         return res.status(400).json({
           success: false,
-          error: {
-            message: 'Cannot register for past events',
-          },
+          error: { message: 'Cannot register for past events' },
         });
       }
+
       const isRegistered = await EventModel.isUserRegistered(user_id, event_id);
       if (isRegistered) {
         return res.status(409).json({
           success: false,
-          error: {
-            message: 'User is already registered for this event',
-          },
+          error: { message: 'User is already registered for this event' },
         });
       }
 
@@ -99,11 +91,10 @@ class EventController {
       if (isFull) {
         return res.status(400).json({
           success: false,
-          error: {
-            message: 'Event is full. Registration capacity has been reached',
-          },
+          error: { message: 'Event is full. Registration capacity reached' },
         });
       }
+
       const registration = await EventModel.registerUser(user_id, event_id);
 
       res.status(201).json({
@@ -120,15 +111,14 @@ class EventController {
       if (error.code === '23505') {
         return res.status(409).json({
           success: false,
-          error: {
-            message: 'User is already registered for this event',
-          },
+          error: { message: 'User is already registered for this event' },
         });
       }
       next(error);
     }
   }
 
+  // Cancel registration for event
   static async cancelRegistration(req, res, next) {
     try {
       const { user_id, event_id } = req.body;
@@ -137,18 +127,15 @@ class EventController {
       if (!userExists) {
         return res.status(404).json({
           success: false,
-          error: {
-            message: 'User not found',
-          },
+          error: { message: 'User not found' },
         });
       }
+
       const event = await EventModel.findById(event_id);
       if (!event) {
         return res.status(404).json({
           success: false,
-          error: {
-            message: 'Event not found',
-          },
+          error: { message: 'Event not found' },
         });
       }
 
@@ -156,9 +143,7 @@ class EventController {
       if (!isRegistered) {
         return res.status(404).json({
           success: false,
-          error: {
-            message: 'User is not registered for this event',
-          },
+          error: { message: 'User is not registered for this event' },
         });
       }
 
@@ -167,20 +152,17 @@ class EventController {
       res.status(200).json({
         success: true,
         message: 'Registration cancelled successfully',
-        data: {
-          user_id,
-          event_id,
-        },
+        data: { user_id, event_id },
       });
     } catch (error) {
       next(error);
     }
   }
 
+  // List all upcoming events
   static async listUpcomingEvents(req, res, next) {
     try {
       const events = await EventModel.findUpcoming();
-
       const sortedEvents = getUpcomingEventsSorted(events);
 
       res.status(200).json({
@@ -194,17 +176,17 @@ class EventController {
       next(error);
     }
   }
+
+  // Get statistics for a specific event
   static async getEventStats(req, res, next) {
     try {
-      const eventId = parseInt(req.params.id);
+      const eventId = parseInt(req.params.id, 10);
 
       const event = await EventModel.findById(eventId);
       if (!event) {
         return res.status(404).json({
           success: false,
-          error: {
-            message: 'Event not found',
-          },
+          error: { message: 'Event not found' },
         });
       }
 
@@ -215,8 +197,8 @@ class EventController {
         data: {
           event_id: eventId,
           event_title: event.title,
-          total_registrations: parseInt(stats.total_registrations),
-          remaining_capacity: parseInt(stats.remaining_capacity),
+          total_registrations: parseInt(stats.total_registrations, 10),
+          remaining_capacity: parseInt(stats.remaining_capacity, 10),
           percentage_filled: parseFloat(stats.percentage_filled),
           capacity: stats.capacity,
         },
